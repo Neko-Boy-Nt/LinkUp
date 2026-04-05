@@ -799,6 +799,41 @@ export default function ChatScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
+        {/* Reply/Edit Reference */}
+        {(replyingTo || editingMessage) && (
+          <View style={{
+            paddingHorizontal: 20,
+            paddingVertical: 8,
+            backgroundColor: isDark ? 'rgba(12,12,31,0.8)' : 'rgba(248,245,255,0.8)',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 12, color: '#CA98FF', fontWeight: '600' }}>
+                {editingMessage ? 'Modifier le message' : `Répondre à ${replyingTo?.sender_id === user?.id ? 'vous' : otherUser?.full_name}`}
+              </Text>
+              <Text style={{ fontSize: 12, color: isDark ? '#AAA8C3' : '#74738B' }} numberOfLines={1}>
+                {editingMessage ? editingMessage.content : replyingTo?.content}
+              </Text>
+            </View>
+            <Pressable onPress={() => { setReplyingTo(null); setEditingMessage(null); setNewMessage(''); }}>
+              <X size={20} color={isDark ? '#AAA8C3' : '#74738B'} />
+            </Pressable>
+          </View>
+        )}
+
+        {/* Emoji Picker */}
+        {showEmojiPicker && (
+          <EmojiPicker 
+            onEmojiSelect={(emoji) => {
+              setNewMessage(prev => prev + emoji);
+              setShowEmojiPicker(false);
+            }}
+            onClose={() => setShowEmojiPicker(false)}
+          />
+        )}
+
         <View
           style={{
             paddingHorizontal: 20,
@@ -809,8 +844,8 @@ export default function ChatScreen() {
             alignItems: 'center',
           }}
         >
-          <Pressable style={{ padding: 8 }}>
-            <Plus size={24} color={isDark ? '#AAA8C3' : '#74738B'} />
+          <Pressable onPress={() => setShowEmojiPicker(!showEmojiPicker)} style={{ padding: 8 }}>
+            <Text style={{ fontSize: 24 }}>😊</Text>
           </Pressable>
 
           <View
@@ -831,7 +866,7 @@ export default function ChatScreen() {
                 setNewMessage(text);
                 handleTyping();
               }}
-              placeholder="Type a message..."
+              placeholder={editingMessage ? "Modifier le message..." : "Écrire un message..."}
               placeholderTextColor={isDark ? 'rgba(170,168,195,0.4)' : 'rgba(116,115,139,0.4)'}
               multiline
               style={{
@@ -841,9 +876,6 @@ export default function ChatScreen() {
                 maxHeight: 100,
               }}
             />
-            <Pressable style={{ padding: 4 }}>
-              <Mic size={20} color={isDark ? '#AAA8C3' : '#74738B'} />
-            </Pressable>
           </View>
 
           <Pressable
