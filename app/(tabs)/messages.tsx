@@ -17,7 +17,7 @@ import { useAuth } from '../../src/providers/AuthProvider';
 import { supabase } from '../../src/lib/supabase';
 import { GlassmorphismCard } from '../../src/components/GlassmorphismCard';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
+
 import { Profile, Conversation, Message, StudentGroup } from '../../src/types';
 import { Edit3, Users, Plus, Search, UserPlus, X, Check, ArrowLeft, MoreVertical } from '../../src/components/Icon';
 
@@ -329,7 +329,7 @@ function EmptyState({ onFindPeople }: { onFindPeople: () => void }) {
   const { colors, isDark } = useTheme();
 
   return (
-    <Animated.View entering={FadeInDown.springify()} style={{ alignItems: 'center', paddingTop: 60, paddingHorizontal: 24 }}>
+    <View style={{ alignItems: 'center', paddingTop: 60, paddingHorizontal: 24 }}>
       <View
         style={{
           width: 96,
@@ -367,7 +367,7 @@ function EmptyState({ onFindPeople }: { onFindPeople: () => void }) {
           Find People
         </Text>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -543,27 +543,59 @@ export default function MessagesScreen() {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      // Fetch conversations without profile relationships
+      const { data: conversationsData, error: conversationsError } = await supabase
         .from('conversations')
         .select(`
           *,
-          participants:conversation_participants(
-            user_id,
-            profile:profiles(*)
-          ),
-          messages:messages(*)
+          participants:conversation_participants(user_id)
         `)
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
+      if (conversationsError) throw conversationsError;
+      
+      // Fetch all participants' profiles separately
+      const allParticipantIds = [...new Set((conversationsData || []).flatMap((c: any) => 
+        c.participants?.map((p: any) => p.user_id) || []
+      ))];
+      
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', allParticipantIds);
+      
+      if (profilesError) throw profilesError;
+      
+      const profilesMap = new Map((profilesData || []).map(p => [p.id, p]));
+      
+      // Fetch last messages for each conversation
+      const conversationIds = (conversationsData || []).map(c => c.id);
+      const { data: messagesData } = await supabase
+        .from('messages')
+        .select('*')
+        .in('conversation_id', conversationIds)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      
+      const lastMessagesMap = new Map();
+      (messagesData || []).forEach(m => {
+        if (!lastMessagesMap.has(m.conversation_id)) {
+          lastMessagesMap.set(m.conversation_id, m);
+        }
+      });
 
-      const formattedConversations: ConversationWithDetails[] = (data || [])
+      const formattedConversations: ConversationWithDetails[] = (conversationsData || [])
         .map((conv: any) => {
-          const otherParticipant = conv.participants?.find((p: any) => p.user_id !== user.id);
-          const lastMessage = conv.messages?.[conv.messages.length - 1];
+          const participants = conv.participants?.map((p: any) => ({
+            ...p,
+            profile: profilesMap.get(p.user_id)
+          })) || [];
+          const otherParticipant = participants.find((p: any) => p.user_id !== user.id);
+          const lastMessage = lastMessagesMap.get(conv.id);
           
           return {
             ...conv,
+            participants,
             other_user: otherParticipant?.profile,
             last_message: lastMessage,
             unread_count: 0,

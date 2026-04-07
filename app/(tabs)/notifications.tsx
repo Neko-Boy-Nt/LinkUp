@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/lib/theme';
 import { useNotifications } from '../../src/providers/NotificationsProvider';
 import { AnimatedButton } from '../../src/components/AnimatedButton';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+
 
 interface SettingItemProps {
   title: string;
@@ -18,9 +18,7 @@ function SettingItem({ title, description, value, onToggle, icon, delay = 0 }: S
   const { colors, isDark } = useTheme();
 
   return (
-    <Animated.View 
-      entering={FadeInUp.delay(delay).springify()}
-      style={{
+    <View style={{
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: colors.surface,
@@ -56,7 +54,7 @@ function SettingItem({ title, description, value, onToggle, icon, delay = 0 }: S
         trackColor={{ false: '#767577', true: colors.primary }}
         thumbColor={value ? '#FFF' : '#F4F3F4'}
       />
-    </Animated.View>
+    </View>
   );
 }
 
@@ -108,7 +106,7 @@ export default function NotificationSettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Permission Status */}
-        <Animated.View entering={FadeInDown.springify()} style={{ marginBottom: 24 }}>
+        <View style={{ marginBottom: 24 }}>
           <View
             style={{
               backgroundColor: hasPermission ? '#22C55E20' : '#FF6B6B20',
@@ -145,7 +143,7 @@ export default function NotificationSettingsScreen() {
               </Pressable>
             )}
           </View>
-        </Animated.View>
+        </View>
 
         {/* Message Notifications */}
         <Text 
@@ -245,7 +243,7 @@ export default function NotificationSettingsScreen() {
         />
 
         {/* Test Notification */}
-        <Animated.View entering={FadeInUp.delay(450)} style={{ marginTop: 24 }}>
+        <View style={{ marginTop: 24 }}>
           <AnimatedButton
             title="Envoyer une notification test"
             onPress={async () => {
@@ -258,7 +256,7 @@ export default function NotificationSettingsScreen() {
             }}
             variant="secondary"
           />
-        </Animated.View>
+        </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>

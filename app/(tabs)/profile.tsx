@@ -5,7 +5,7 @@ import { useTheme } from '../../src/lib/theme';
 import { useAuth } from '../../src/providers/AuthProvider';
 import { GlassmorphismCard } from '../../src/components/GlassmorphismCard';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+
 import { Menu, Settings, Share2, Grid, Bookmark, Users } from '../../src/components/Icon';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

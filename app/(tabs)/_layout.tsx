@@ -5,6 +5,7 @@ import { useAuth } from '../../src/providers/AuthProvider';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   Home,
+  Search,
   GraduationCap,
   MessageSquare,
 } from '../../src/components/Icon';
@@ -24,10 +25,9 @@ function TabIcon({
       style={{
         alignItems: 'center',
         justifyContent: 'center',
-        transform: [{ scale: focused ? 1.1 : 1 }],
       }}
     >
-      <Icon size={24} color={color} />
+      <Icon size={focused ? 26 : 24} color={color} />
     </View>
   );
 }
@@ -161,11 +161,20 @@ export default function TabsLayout() {
         }}
       />
 
+      {/* Search */}
+      <Tabs.Screen
+        name="search"
+        options={{
+          title: 'Recherche',
+          tabBarIcon: ({ focused, color }) => <TabIcon icon={Search} focused={focused} color={color} />,
+        }}
+      />
+
       {/* Student */}
       <Tabs.Screen
         name="student"
         options={{
-          title: 'Étudiant',
+          title: 'Dashboard',
           tabBarIcon: ({ focused, color }) => <TabIcon icon={GraduationCap} focused={focused} color={color} />,
         }}
       />
@@ -189,12 +198,6 @@ export default function TabsLayout() {
       />
 
       {/* Hidden screens */}
-      <Tabs.Screen
-        name="search"
-        options={{
-          href: null,
-        }}
-      />
       <Tabs.Screen
         name="chat"
         options={{

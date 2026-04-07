@@ -4,7 +4,6 @@ import { useTheme } from '../src/lib/theme';
 import { useAuth } from '../src/providers/AuthProvider';
 import { GlassmorphismCard } from '../src/components/GlassmorphismCard';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import {
   ChevronLeft,
   User,
@@ -56,7 +55,7 @@ function GradientToggle({ value, onValueChange }: { value: boolean; onValueChang
           height: 24,
           borderRadius: 12,
           backgroundColor: '#FFF',
-          transform: [{ translateX: value ? 24 : 0 }],
+          marginLeft: value ? 22 : 2,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.2,
@@ -355,7 +354,6 @@ export default function SettingsScreen() {
               style={{
                 flex: 1,
                 backgroundColor: isDark ? 'rgba(35,35,63,0.6)' : 'rgba(248,245,255,0.6)',
-                borderRadius: 16,
                 padding: 20,
                 borderWidth: 1,
                 borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',

@@ -1,14 +1,5 @@
 import React from 'react';
 import { View, ViewStyle, StyleProp, Text } from 'react-native';
-import Animated, { 
-  useAnimatedStyle, 
-  useSharedValue, 
-  withSpring,
-  withSequence,
-  withDelay,
-  interpolate,
-  Extrapolation
-} from 'react-native-reanimated';
 import { useTheme } from '../lib/theme';
 
 interface GlassmorphismCardProps {
@@ -19,8 +10,6 @@ interface GlassmorphismCardProps {
   delay?: number;
 }
 
-const AnimatedView = Animated.createAnimatedComponent(View);
-
 export function GlassmorphismCard({ 
   children, 
   style, 
@@ -29,38 +18,6 @@ export function GlassmorphismCard({
   delay = 0 
 }: GlassmorphismCardProps) {
   const { colors, isDark } = useTheme();
-  
-  const scale = useSharedValue(animated ? 0.9 : 1);
-  const opacity = useSharedValue(animated ? 0 : 1);
-  const translateY = useSharedValue(animated ? 20 : 0);
-
-  React.useEffect(() => {
-    if (animated) {
-      const startAnimation = () => {
-        scale.value = withDelay(
-          delay,
-          withSpring(1, { stiffness: 100, damping: 15 })
-        );
-        opacity.value = withDelay(
-          delay,
-          withSpring(1, { stiffness: 100, damping: 15 })
-        );
-        translateY.value = withDelay(
-          delay,
-          withSpring(0, { stiffness: 100, damping: 15 })
-        );
-      };
-      startAnimation();
-    }
-  }, [animated, delay]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: scale.value },
-      { translateY: translateY.value }
-    ],
-    opacity: opacity.value,
-  }));
 
   const getBackgroundOpacity = () => {
     switch (intensity) {
@@ -79,7 +36,7 @@ export function GlassmorphismCard({
   };
 
   return (
-    <AnimatedView
+    <View
       style={[
         {
           backgroundColor: isDark 
@@ -97,11 +54,9 @@ export function GlassmorphismCard({
           elevation: isDark ? 8 : 4,
           overflow: 'hidden',
         },
-        animated && animatedStyle,
         style,
       ]}
     >
-      {/* Gradient overlay for glass effect */}
       <View
         style={{
           position: 'absolute',
@@ -116,11 +71,10 @@ export function GlassmorphismCard({
         }}
       />
       {children}
-    </AnimatedView>
+    </View>
   );
 }
 
-// Animated pressable with scale effect
 interface AnimatedPressableProps {
   children: React.ReactNode;
   onPress?: () => void;
@@ -136,58 +90,20 @@ export function AnimatedPressable({
   style, 
   scale = 0.95 
 }: AnimatedPressableProps) {
-  const pressScale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pressScale.value }],
-  }));
-
-  const handlePressIn = () => {
-    pressScale.value = withSpring(scale, { stiffness: 400, damping: 17 });
-  };
-
-  const handlePressOut = () => {
-    pressScale.value = withSpring(1, { stiffness: 400, damping: 17 });
-  };
-
   return (
-    <Animated.View style={animatedStyle}>
-      <View
-        onTouchStart={handlePressIn}
-        onTouchEnd={handlePressOut}
-        onTouchCancel={handlePressOut}
-        style={style}
-      >
-        {children}
-      </View>
-    </Animated.View>
+    <View
+      onTouchStart={onPress}
+      onTouchEnd={onPress}
+      onTouchCancel={onPress}
+      style={style}
+    >
+      {children}
+    </View>
   );
 }
 
-// Shimmer effect for loading states
 export function Shimmer({ width = 200, height = 20 }: { width?: number; height?: number }) {
   const { isDark } = useTheme();
-  const shimmerValue = useSharedValue(-width);
-
-  React.useEffect(() => {
-    shimmerValue.value = withSequence(
-      withDelay(0, withSpring(width, { duration: 1500 })),
-      withDelay(500, withSpring(-width, { duration: 0 }))
-    );
-    
-    const interval = setInterval(() => {
-      shimmerValue.value = withSequence(
-        withSpring(width, { duration: 1500 }),
-        withDelay(500, withSpring(-width, { duration: 0 }))
-      );
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [width]);
-
-  const shimmerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: shimmerValue.value }],
-  }));
 
   return (
     <View
@@ -199,24 +115,20 @@ export function Shimmer({ width = 200, height = 20 }: { width?: number; height?:
         overflow: 'hidden',
       }}
     >
-      <Animated.View
-        style={[
-          {
-            width: width * 0.5,
-            height,
-            backgroundColor: isDark 
-              ? 'rgba(138, 43, 226, 0.3)' 
-              : 'rgba(138, 43, 226, 0.2)',
-            borderRadius: height / 2,
-          },
-          shimmerStyle,
-        ]}
+      <View
+        style={{
+          width: width * 0.5,
+          height,
+          backgroundColor: isDark 
+            ? 'rgba(138, 43, 226, 0.3)' 
+            : 'rgba(138, 43, 226, 0.2)',
+          borderRadius: height / 2,
+        }}
       />
     </View>
   );
 }
 
-// Badge with pulse animation
 interface AnimatedBadgeProps {
   count: number;
   color?: string;
@@ -224,40 +136,23 @@ interface AnimatedBadgeProps {
 
 export function AnimatedBadge({ count, color }: AnimatedBadgeProps) {
   const { colors } = useTheme();
-  const pulse = useSharedValue(1);
-
-  React.useEffect(() => {
-    if (count > 0) {
-      pulse.value = withSequence(
-        withSpring(1.2, { stiffness: 200, damping: 10 }),
-        withSpring(1, { stiffness: 200, damping: 10 })
-      );
-    }
-  }, [count]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulse.value }],
-  }));
 
   if (count === 0) return null;
 
   return (
-    <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          top: -4,
-          right: -4,
-          minWidth: 20,
-          height: 20,
-          borderRadius: 10,
-          backgroundColor: color || colors.primary,
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingHorizontal: 6,
-        },
-        animatedStyle,
-      ]}
+    <View
+      style={{
+        position: 'absolute',
+        top: -4,
+        right: -4,
+        minWidth: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: color || colors.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 6,
+      }}
     >
       <View
         style={{
@@ -310,11 +205,10 @@ export function AnimatedBadge({ count, color }: AnimatedBadgeProps) {
           />
         )}
       </View>
-    </Animated.View>
+    </View>
   );
 }
 
-// Floating action button with spring animation
 interface FABProps {
   icon: string;
   onPress: () => void;
@@ -324,24 +218,6 @@ interface FABProps {
 
 export function FloatingActionButton({ icon, onPress, color, size = 'medium' }: FABProps) {
   const { colors } = useTheme();
-  const scale = useSharedValue(1);
-  const rotation = useSharedValue(0);
-
-  const handlePress = () => {
-    scale.value = withSequence(
-      withSpring(0.9, { stiffness: 400, damping: 17 }),
-      withSpring(1, { stiffness: 400, damping: 17 })
-    );
-    rotation.value = withSpring(rotation.value + 360, { stiffness: 100, damping: 10 });
-    onPress();
-  };
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: scale.value },
-      { rotate: `${rotation.value}deg` }
-    ],
-  }));
 
   const getSize = () => {
     switch (size) {
@@ -352,27 +228,25 @@ export function FloatingActionButton({ icon, onPress, color, size = 'medium' }: 
   };
 
   return (
-    <Animated.View style={animatedStyle}>
-      <View
-        onTouchStart={handlePress}
-        style={{
-          width: getSize(),
-          height: getSize(),
-          borderRadius: getSize() / 2,
-          backgroundColor: color || colors.primary,
-          alignItems: 'center',
-          justifyContent: 'center',
-          shadowColor: color || colors.primary,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.4,
-          shadowRadius: 12,
-          elevation: 8,
-        }}
-      >
-        <Text style={{ fontSize: size === 'small' ? 20 : size === 'large' ? 28 : 24, color: '#FFF', fontWeight: 'bold' }}>
-          {icon}
-        </Text>
-      </View>
-    </Animated.View>
+    <View
+      onTouchStart={onPress}
+      style={{
+        width: getSize(),
+        height: getSize(),
+        borderRadius: getSize() / 2,
+        backgroundColor: color || colors.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: color || colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+        elevation: 8,
+      }}
+    >
+      <Text style={{ fontSize: size === 'small' ? 20 : size === 'large' ? 28 : 24, color: '#FFF', fontWeight: 'bold' }}>
+        {icon}
+      </Text>
+    </View>
   );
 }

@@ -1,9 +1,6 @@
 import React from 'react';
 import { Pressable, Text, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import Animated, { useAnimatedStyle, withSpring, useSharedValue } from 'react-native-reanimated';
 import { useTheme } from '../lib/theme';
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 interface ButtonProps {
   title: string;
@@ -23,19 +20,6 @@ export function AnimatedButton({
   style,
 }: ButtonProps) {
   const { colors } = useTheme();
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.95, { stiffness: 400, damping: 17 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { stiffness: 400, damping: 17 });
-  };
 
   const getBackgroundColor = () => {
     if (variant === 'primary') return colors.primary;
@@ -50,11 +34,9 @@ export function AnimatedButton({
   };
 
   return (
-    <AnimatedPressable
+    <Pressable
       onPress={onPress}
       disabled={loading || disabled}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
       style={[
         {
           backgroundColor: getBackgroundColor(),
@@ -67,7 +49,6 @@ export function AnimatedButton({
           borderWidth: variant === 'outline' ? 2 : 0,
           borderColor: colors.primary,
         } as ViewStyle,
-        animatedStyle,
         style,
       ]}
     >
@@ -84,6 +65,6 @@ export function AnimatedButton({
           {title}
         </Text>
       )}
-    </AnimatedPressable>
+    </Pressable>
   );
 }

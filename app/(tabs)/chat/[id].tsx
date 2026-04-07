@@ -19,9 +19,9 @@ import { useAuth } from '../../../src/providers/AuthProvider';
 import { supabase } from '../../../src/lib/supabase';
 import { GlassmorphismCard } from '../../../src/components/GlassmorphismCard';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInUp, FadeInRight } from 'react-native-reanimated';
+
 import { Message, Profile, MessageReaction } from '../../../src/types';
-import { ArrowLeft, MoreVertical, Video, Phone, Mic, Send, Check, Plus } from '../../../src/components/Icon';
+import { ArrowLeft, MoreVertical, Video, Phone, Send, Check, Smile, X } from '../../../src/components/Icon';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -510,18 +510,25 @@ export default function ChatScreen() {
 
   const loadConversationDetails = async () => {
     try {
-      const { data, error } = await supabase
+      // Get other participant's user_id
+      const { data: participantData, error: participantError } = await supabase
         .from('conversation_participants')
-        .select(`
-          profile:profiles(*)
-        `)
+        .select('user_id')
         .eq('conversation_id', id)
         .neq('user_id', user?.id)
         .single();
 
-      if (error) throw error;
-      const profile = (data?.profile as unknown as Profile) || null;
-      setOtherUser(profile);
+      if (participantError) throw participantError;
+      
+      // Fetch profile separately
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', participantData?.user_id)
+        .single();
+
+      if (profileError) throw profileError;
+      setOtherUser(profileData);
     } catch (error) {
       console.error('Error loading conversation:', error);
     }

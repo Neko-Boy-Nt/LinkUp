@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView, Alert } from 'react-native';
 import { useTheme } from '../src/lib/theme';
 import { useAuth } from '../src/providers/AuthProvider';
 import { supabase } from '../src/lib/supabase';
-import Animated, { FadeInUp, FadeInDown, FadeInRight } from 'react-native-reanimated';
+
 import { useRouter } from 'expo-router';
 
 export default function OnboardingScreen() {
@@ -109,7 +109,7 @@ export default function OnboardingScreen() {
   };
 
   const renderChoiceStep = () => (
-    <Animated.View entering={FadeInUp.springify()} style={{ padding: 24 }}>
+    <View style={{ padding: 24 }}>
       <Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>
         Bienvenue sur LinkUp !
       </Text>
@@ -157,11 +157,11 @@ export default function OnboardingScreen() {
           Messagerie, publications et stories
         </Text>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 
   const renderStudentInfoStep = () => (
-    <Animated.View entering={FadeInRight.springify()} style={{ padding: 24 }}>
+    <View style={{ padding: 24 }}>
       <Text style={{ fontSize: 28, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>
         🎓 Info étudiant
       </Text>
@@ -241,11 +241,11 @@ export default function OnboardingScreen() {
           {loading ? '...' : 'Continuer'}
         </Text>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 
   const renderUsernameStep = () => (
-    <Animated.View entering={FadeInUp.springify()} style={{ padding: 24 }}>
+    <View style={{ padding: 24 }}>
       <Text style={{ fontSize: 28, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>
         Choisis ton pseudo
       </Text>
@@ -289,7 +289,7 @@ export default function OnboardingScreen() {
           {loading ? '...' : 'C\'est parti !'}
         </Text>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 
   return (

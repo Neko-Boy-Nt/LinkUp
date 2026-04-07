@@ -12,11 +12,6 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/lib/theme';
 import { useAuth } from '../../src/providers/AuthProvider';
 import { supabase } from '../../src/lib/supabase';
-import Animated, { 
-  FadeInDown, 
-  FadeInUp,
-  FadeInRight
-} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Profile, StudentGroup } from '../../src/types';
 import { Search, SlidersHorizontal, MessageCircle, Users, Code, BarChart3, Palette } from 'lucide-react-native';
@@ -37,9 +32,9 @@ const FILTERS = [
 ];
 
 const MOCK_USERS: Profile[] = [
-  { id: '1', full_name: 'Thomas Rivet', username: 'thomasr', university: 'Lead Developer @TechFlow', avatar_url: null, field_of_study: 'Expert en React & Architecture Cloud. Mentor pour les projets de fin d\'étude.', bio: null, is_student: false, year_of_study: null, has_completed_onboarding: true, onboarding_step: 'complete', is_public: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: '2', full_name: 'Sofia Chen', username: 'sofiac', university: 'Fullstack Dev | Mentor', avatar_url: null, field_of_study: 'Passionnée par l\'enseignement du code et l\'accessibilité web.', bio: null, is_student: false, year_of_study: null, has_completed_onboarding: true, onboarding_step: 'complete', is_public: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: '3', full_name: 'Marc Lemoine', username: 'marcl', university: 'Founder @DesignNexus', avatar_url: null, field_of_study: 'Spécialiste Design Thinking et Product Strategy. 10 ans d\'expérience.', bio: null, is_student: false, year_of_study: null, has_completed_onboarding: true, onboarding_step: 'complete', is_public: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: '1', full_name: 'Thomas Rivet', username: 'thomasr', university: 'Lead Developer @TechFlow', avatar_url: null, cover_url: null, field_of_study: 'Expert en React & Architecture Cloud. Mentor pour les projets de fin d\'étude.', bio: null, is_student: false, year_of_study: null, has_completed_onboarding: true, onboarding_step: 'complete', is_public: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: '2', full_name: 'Sofia Chen', username: 'sofiac', university: 'Fullstack Dev | Mentor', avatar_url: null, cover_url: null, field_of_study: 'Passionnée par l\'enseignement du code et l\'accessibilité web.', bio: null, is_student: false, year_of_study: null, has_completed_onboarding: true, onboarding_step: 'complete', is_public: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: '3', full_name: 'Marc Lemoine', username: 'marcl', university: 'Founder @DesignNexus', avatar_url: null, cover_url: null, field_of_study: 'Spécialiste Design Thinking et Product Strategy. 10 ans d\'expérience.', bio: null, is_student: false, year_of_study: null, has_completed_onboarding: true, onboarding_step: 'complete', is_public: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
 ];
 
 const MOCK_GROUPS: StudentGroup[] = [
@@ -53,7 +48,7 @@ function UserResult({ user, index }: { user: Profile; index: number }) {
   const router = useRouter();
 
   return (
-    <Animated.View entering={FadeInRight.delay(index * 50).springify()}>
+    <View>
       <View
         style={{
           backgroundColor: isDark ? 'rgba(35, 35, 63, 0.4)' : 'rgba(248, 245, 255, 0.6)',
@@ -115,7 +110,7 @@ function UserResult({ user, index }: { user: Profile; index: number }) {
           </LinearGradient>
         </Pressable>
       </View>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -138,7 +133,7 @@ function GroupResult({ group, index }: { group: StudentGroup; index: number }) {
   const typeColor = typeColors[group.type] || '#CA98FF';
 
   return (
-    <Animated.View entering={FadeInRight.delay(index * 50).springify()}>
+    <View>
       <View
         style={{
           backgroundColor: isDark ? 'rgba(17, 17, 39, 0.6)' : 'rgba(248, 245, 255, 0.8)',
@@ -174,7 +169,7 @@ function GroupResult({ group, index }: { group: StudentGroup; index: number }) {
           </View>
         </View>
       </View>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -295,7 +290,7 @@ export default function SearchScreen() {
             </Text>
           </View>
         ) : !hasSearched ? (
-          <Animated.View entering={FadeInUp.springify()}>
+          <View>
             {/* Featured Course Card */}
             <View style={{ borderRadius: 16, overflow: 'hidden', marginBottom: 24 }}>
               <Image
@@ -353,7 +348,7 @@ export default function SearchScreen() {
             {MOCK_GROUPS.map((group, index) => (
               <GroupResult key={group.id} group={group} index={index} />
             ))}
-          </Animated.View>
+          </View>
         ) : (
           <View>
             {/* Search Results: Users */}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,16 @@ import {
   Image,
   TextInput,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/lib/theme';
 import { useAuth } from '../../src/providers/AuthProvider';
+import { supabase } from '../../src/lib/supabase';
+import { useResponsive } from '../../src/hooks/useResponsive';
 import { GlassmorphismCard } from '../../src/components/GlassmorphismCard';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
+
 import {
   Bell,
   Users,
@@ -37,39 +40,50 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 type TabType = 'groupes' | 'ressources' | 'calendrier' | 'opportunites';
 
-// Mock data
-const GROUPS = [
-  { id: '1', name: 'Info L3 2024', description: 'Groupe de la filière Informatique', members: 142, icon: '💻' },
-  { id: '2', name: 'Design UX/UI', description: 'Designers & UI/UX enthusiasts', members: 89, icon: '🎨' },
-  { id: '3', name: 'Médecine Paris', description: 'Étudiants en médecine', members: 234, icon: '🏥' },
-  { id: '4', name: 'Start-Up Nation', description: 'Entrepreneuriat étudiant', members: 67, icon: '🚀' },
-];
+// Dynamic data types
+interface Group {
+  id: string;
+  name: string;
+  description: string;
+  members: number;
+  icon: string;
+}
 
-const RESOURCES = [
-  { id: '1', title: 'Mécanique Quantique Finale.pdf', subject: 'Physique', size: '4.2 MB', type: 'pdf', downloads: 234 },
-  { id: '2', title: 'Principes_UI_Design.mp4', subject: 'Design', size: '128 MB', type: 'video', downloads: 189 },
-  { id: '3', title: 'Cours Algorithmes Avancés', subject: 'Informatique', size: '2.1 MB', type: 'pdf', downloads: 456 },
-  { id: '4', title: 'Guide Références Design', subject: 'Design', size: '15 MB', type: 'link', downloads: 123 },
-];
+interface Resource {
+  id: string;
+  title: string;
+  subject: string;
+  size: string;
+  type: string;
+  downloads: number;
+}
 
-const SUBJECTS = [
-  { id: '1', name: 'Physique', files: 24, icon: '🔬', color: '#CA98FF' },
-  { id: '2', name: 'Calcul', files: 18, icon: '📐', color: '#FF8B9A' },
-  { id: '3', name: 'Design', files: 42, icon: '🎨', color: '#E097FD' },
-  { id: '4', name: 'Histoire', files: 12, icon: '📚', color: '#9C42F4' },
-];
+interface Subject {
+  id: string;
+  name: string;
+  files: number;
+  icon: string;
+  color: string;
+}
 
-const EVENTS = [
-  { id: '1', title: "Dynamique UI Avancée", type: 'cours', time: '10:00 - 11:30', location: 'Studio B', color: '#CA98FF' },
-  { id: '2', title: 'Portfolio Structures de Données', type: 'echeance', time: '23:59', location: 'À rendre', color: '#FF8B9A' },
-  { id: '3', title: 'Atelier Carrière Tech', type: 'evenement', time: '15:00 - 17:00', location: 'Hall Principal', color: '#E097FD' },
-];
+interface Event {
+  id: string;
+  title: string;
+  type: 'cours' | 'echeance' | 'evenement';
+  time: string;
+  location: string;
+  color: string;
+}
 
-const OPPORTUNITIES = [
-  { id: '1', title: 'Stage UI Designer', company: 'Google', type: 'stage', location: 'Paris / À distance', deadline: '30 Nov', logo: '🔍' },
-  { id: '2', title: 'Product Designer', company: 'LinkUp Studio', type: 'alternance', location: 'Lyon / Hybride', deadline: '15 Déc', logo: '💎' },
-  { id: '3', title: 'Représentant Campus', company: 'Apple', type: 'job', location: 'Bordeaux / Campus', deadline: '20 Nov', logo: '🍎' },
-];
+interface Opportunity {
+  id: string;
+  title: string;
+  company: string;
+  type: 'stage' | 'alternance' | 'job';
+  location: string;
+  deadline: string;
+  logo: string;
+}
 
 // Tab Button Component
 function TabButton({ active, onPress, icon: Icon, label }: { active: boolean; onPress: () => void; icon: any; label: string }) {
@@ -102,8 +116,9 @@ function TabButton({ active, onPress, icon: Icon, label }: { active: boolean; on
 }
 
 // Group Card Component
-function GroupCard({ group }: { group: typeof GROUPS[0] }) {
+function GroupCard({ group }: { group: Group }) {
   const { isDark } = useTheme();
+  const { fontScale } = useResponsive();
   
   return (
     <GlassmorphismCard
@@ -126,14 +141,14 @@ function GroupCard({ group }: { group: typeof GROUPS[0] }) {
             marginRight: 12,
           }}
         >
-          <Text style={{ fontSize: 24 }}>{group.icon}</Text>
+          <Text style={{ fontSize: 24 * fontScale }}>{group.icon}</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 16, fontWeight: 'bold', color: isDark ? '#E5E3FF' : '#1E1E1E' }}>{group.name}</Text>
-          <Text style={{ fontSize: 12, color: isDark ? '#AAA8C3' : '#74738B', marginTop: 2 }}>{group.description}</Text>
+          <Text style={{ fontSize: 16 * fontScale, fontWeight: 'bold', color: isDark ? '#E5E3FF' : '#1E1E1E' }}>{group.name}</Text>
+          <Text style={{ fontSize: 12 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', marginTop: 2 }}>{group.description}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
             <Users size={12} color={isDark ? '#AAA8C3' : '#74738B'} />
-            <Text style={{ fontSize: 11, color: isDark ? '#AAA8C3' : '#74738B', marginLeft: 4 }}>{group.members} membres</Text>
+            <Text style={{ fontSize: 11 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', marginLeft: 4 }}>{group.members} membres</Text>
           </View>
         </View>
         <Pressable
@@ -144,7 +159,7 @@ function GroupCard({ group }: { group: typeof GROUPS[0] }) {
             backgroundColor: '#CA98FF',
           }}
         >
-          <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#46007D' }}>Rejoindre</Text>
+          <Text style={{ fontSize: 12 * fontScale, fontWeight: 'bold', color: '#46007D' }}>Rejoindre</Text>
         </Pressable>
       </View>
     </GlassmorphismCard>
@@ -152,8 +167,9 @@ function GroupCard({ group }: { group: typeof GROUPS[0] }) {
 }
 
 // Resource Card Component
-function ResourceCard({ resource }: { resource: typeof RESOURCES[0] }) {
+function ResourceCard({ resource }: { resource: Resource }) {
   const { isDark } = useTheme();
+  const { fontScale } = useResponsive();
   
   const getIcon = () => {
     switch (resource.type) {
@@ -191,25 +207,26 @@ function ResourceCard({ resource }: { resource: typeof RESOURCES[0] }) {
         {getIcon()}
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 14, fontWeight: '600', color: isDark ? '#E5E3FF' : '#1E1E1E' }} numberOfLines={1}>
+        <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: isDark ? '#E5E3FF' : '#1E1E1E' }} numberOfLines={1}>
           {resource.title}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-          <Text style={{ fontSize: 11, color: '#CA98FF', fontWeight: '500' }}>{resource.subject}</Text>
-          <Text style={{ fontSize: 11, color: isDark ? '#AAA8C3' : '#74738B', marginLeft: 8 }}>{resource.size}</Text>
+          <Text style={{ fontSize: 11 * fontScale, color: '#CA98FF', fontWeight: '500' }}>{resource.subject}</Text>
+          <Text style={{ fontSize: 11 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', marginLeft: 8 }}>{resource.size}</Text>
         </View>
       </View>
       <View style={{ alignItems: 'center' }}>
         <Download size={18} color={isDark ? '#AAA8C3' : '#74738B'} />
-        <Text style={{ fontSize: 10, color: isDark ? '#AAA8C3' : '#74738B', marginTop: 2 }}>{resource.downloads}</Text>
+        <Text style={{ fontSize: 10 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', marginTop: 2 }}>{resource.downloads}</Text>
       </View>
     </Pressable>
   );
 }
 
 // Event Card Component
-function EventCard({ event }: { event: typeof EVENTS[0] }) {
+function EventCard({ event }: { event: Event }) {
   const { isDark } = useTheme();
+  const { fontScale } = useResponsive();
   
   const getIcon = () => {
     switch (event.type) {
@@ -234,17 +251,17 @@ function EventCard({ event }: { event: typeof EVENTS[0] }) {
       <View style={{ padding: 16 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 10, color: event.color, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1 }}>
+            <Text style={{ fontSize: 10 * fontScale, color: event.color, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1 }}>
               {event.type === 'cours' ? 'Cours' : event.type === 'echeance' ? 'Échéance' : 'Événement'}
             </Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: isDark ? '#E5E3FF' : '#1E1E1E', marginTop: 4 }}>
+            <Text style={{ fontSize: 16 * fontScale, fontWeight: 'bold', color: isDark ? '#E5E3FF' : '#1E1E1E', marginTop: 4 }}>
               {event.title}
             </Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
               <Clock size={14} color={isDark ? '#AAA8C3' : '#74738B'} />
-              <Text style={{ fontSize: 12, color: isDark ? '#AAA8C3' : '#74738B', marginLeft: 6 }}>{event.time}</Text>
+              <Text style={{ fontSize: 12 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', marginLeft: 6 }}>{event.time}</Text>
               <MapPin size={14} color={isDark ? '#AAA8C3' : '#74738B'} style={{ marginLeft: 12 }} />
-              <Text style={{ fontSize: 12, color: isDark ? '#AAA8C3' : '#74738B', marginLeft: 6 }}>{event.location}</Text>
+              <Text style={{ fontSize: 12 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', marginLeft: 6 }}>{event.location}</Text>
             </View>
           </View>
           <View
@@ -266,8 +283,9 @@ function EventCard({ event }: { event: typeof EVENTS[0] }) {
 }
 
 // Opportunity Card Component
-function OpportunityCard({ opportunity }: { opportunity: typeof OPPORTUNITIES[0] }) {
+function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
   const { isDark } = useTheme();
+  const { fontScale } = useResponsive();
   
   const getTypeColor = () => {
     switch (opportunity.type) {
@@ -297,7 +315,7 @@ function OpportunityCard({ opportunity }: { opportunity: typeof OPPORTUNITIES[0]
               backgroundColor: `${getTypeColor()}20`,
             }}
           >
-            <Text style={{ fontSize: 10, fontWeight: 'bold', color: getTypeColor(), textTransform: 'uppercase' }}>
+            <Text style={{ fontSize: 10 * fontScale, fontWeight: 'bold', color: getTypeColor(), textTransform: 'uppercase' }}>
               {opportunity.type}
             </Text>
           </View>
@@ -315,22 +333,22 @@ function OpportunityCard({ opportunity }: { opportunity: typeof OPPORTUNITIES[0]
               marginRight: 16,
             }}
           >
-            <Text style={{ fontSize: 28 }}>{opportunity.logo}</Text>
+            <Text style={{ fontSize: 28 * fontScale }}>{opportunity.logo}</Text>
           </View>
           <View>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDark ? '#E5E3FF' : '#1E1E1E' }}>{opportunity.title}</Text>
-            <Text style={{ fontSize: 14, color: isDark ? '#AAA8C3' : '#74738B', marginTop: 2 }}>{opportunity.company}</Text>
+            <Text style={{ fontSize: 18 * fontScale, fontWeight: 'bold', color: isDark ? '#E5E3FF' : '#1E1E1E' }}>{opportunity.title}</Text>
+            <Text style={{ fontSize: 14 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', marginTop: 2 }}>{opportunity.company}</Text>
           </View>
         </View>
         
         <View style={{ flexDirection: 'row', marginBottom: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <MapPin size={14} color={isDark ? '#AAA8C3' : '#74738B'} />
-            <Text style={{ fontSize: 12, color: isDark ? '#AAA8C3' : '#74738B', marginLeft: 6 }}>{opportunity.location}</Text>
+            <Text style={{ fontSize: 12 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', marginLeft: 6 }}>{opportunity.location}</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 16 }}>
             <Clock size={14} color="#FF6E84" />
-            <Text style={{ fontSize: 12, color: '#FF6E84', marginLeft: 6 }}>Avant le {opportunity.deadline}</Text>
+            <Text style={{ fontSize: 12 * fontScale, color: '#FF6E84', marginLeft: 6 }}>Avant le {opportunity.deadline}</Text>
           </View>
         </View>
         
@@ -345,7 +363,7 @@ function OpportunityCard({ opportunity }: { opportunity: typeof OPPORTUNITIES[0]
               alignItems: 'center',
             }}
           >
-            <Text style={{ fontSize: 14, fontWeight: '600', color: isDark ? '#E5E3FF' : '#1E1E1E' }}>Voir l'offre</Text>
+            <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: isDark ? '#E5E3FF' : '#1E1E1E' }}>Voir l'offre</Text>
           </Pressable>
           <Pressable
             style={{
@@ -356,7 +374,7 @@ function OpportunityCard({ opportunity }: { opportunity: typeof OPPORTUNITIES[0]
               alignItems: 'center',
             }}
           >
-            <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#46007D' }}>Postuler</Text>
+            <Text style={{ fontSize: 14 * fontScale, fontWeight: 'bold', color: '#46007D' }}>Postuler</Text>
           </Pressable>
         </View>
       </View>
@@ -368,8 +386,52 @@ export default function StudentScreen() {
   const { colors, isDark } = useTheme();
   const { profile, user } = useAuth();
   const router = useRouter();
+  const { fontScale } = useResponsive();
   const [activeTab, setActiveTab] = useState<TabType>('groupes');
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  // Dynamic data states - empty initially, will be fetched from Supabase
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+
+  // Fetch data from Supabase when tab changes
+  useEffect(() => {
+    fetchData();
+  }, [activeTab]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      switch (activeTab) {
+        case 'groupes':
+          const { data: groupsData } = await supabase.from('student_groups').select('*').limit(10);
+          setGroups(groupsData || []);
+          break;
+        case 'ressources':
+          const { data: resourcesData } = await supabase.from('resources').select('*').limit(10);
+          const { data: subjectsData } = await supabase.from('subjects').select('*').limit(10);
+          setResources(resourcesData || []);
+          setSubjects(subjectsData || []);
+          break;
+        case 'calendrier':
+          const { data: eventsData } = await supabase.from('events').select('*').limit(10);
+          setEvents(eventsData || []);
+          break;
+        case 'opportunites':
+          const { data: opportunitiesData } = await supabase.from('opportunities').select('*').limit(10);
+          setOpportunities(opportunitiesData || []);
+          break;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getAvatarInitial = () => {
     if (profile?.full_name) return profile.full_name.charAt(0).toUpperCase();
@@ -442,7 +504,7 @@ export default function StudentScreen() {
           
           {/* GROUPES TAB */}
           {activeTab === 'groupes' && (
-            <Animated.View entering={FadeInUp.duration(300)}>
+            <View>
               {/* Search */}
               <View
                 style={{
@@ -491,16 +553,24 @@ export default function StudentScreen() {
               </Pressable>
 
               {/* Groups List */}
-              <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.text, marginBottom: 12 }}>Groupes recommandés</Text>
-              {GROUPS.map((group) => (
-                <GroupCard key={group.id} group={group} />
-              ))}
-            </Animated.View>
+              <Text style={{ fontSize: 18 * fontScale, fontWeight: 'bold', color: colors.text, marginBottom: 12 }}>Groupes recommandés</Text>
+              {loading ? (
+                <ActivityIndicator color="#CA98FF" />
+              ) : groups.length === 0 ? (
+                <Text style={{ fontSize: 14 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', textAlign: 'center', marginTop: 20 }}>
+                  Aucun groupe disponible
+                </Text>
+              ) : (
+                groups.map((group: Group) => (
+                  <GroupCard key={group.id} group={group} />
+                ))
+              )}
+            </View>
           )}
 
           {/* RESSOURCES TAB */}
           {activeTab === 'ressources' && (
-            <Animated.View entering={FadeInUp.duration(300)}>
+            <View>
               {/* Search */}
               <View
                 style={{
@@ -557,9 +627,9 @@ export default function StudentScreen() {
               </ScrollView>
 
               {/* Subjects Grid */}
-              <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.text, marginBottom: 12 }}>Matières</Text>
+              <Text style={{ fontSize: 18 * fontScale, fontWeight: 'bold', color: colors.text, marginBottom: 12 }}>Matières</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6 }}>
-                {SUBJECTS.map((subject) => (
+                {subjects.map((subject: Subject) => (
                   <Pressable
                     key={subject.id}
                     style={{
@@ -594,18 +664,26 @@ export default function StudentScreen() {
               </View>
 
               {/* Recent Resources */}
-              <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.text, marginTop: 24, marginBottom: 12 }}>
+              <Text style={{ fontSize: 18 * fontScale, fontWeight: 'bold', color: colors.text, marginTop: 24, marginBottom: 12 }}>
                 Ressources récentes
               </Text>
-              {RESOURCES.map((resource) => (
-                <ResourceCard key={resource.id} resource={resource} />
-              ))}
-            </Animated.View>
+              {loading ? (
+                <ActivityIndicator color="#CA98FF" />
+              ) : resources.length === 0 ? (
+                <Text style={{ fontSize: 14 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', textAlign: 'center' }}>
+                  Aucune ressource disponible
+                </Text>
+              ) : (
+                resources.map((resource: Resource) => (
+                  <ResourceCard key={resource.id} resource={resource} />
+                ))
+              )}
+            </View>
           )}
 
           {/* CALENDRIER TAB */}
           {activeTab === 'calendrier' && (
-            <Animated.View entering={FadeInUp.duration(300)}>
+            <View>
               {/* Month Header */}
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <View>
@@ -622,7 +700,7 @@ export default function StudentScreen() {
                       backgroundColor: isDark ? 'rgba(35,35,63,0.6)' : 'rgba(248,245,255,0.6)',
                     }}
                   >
-                    <ChevronRight size={20} color="#CA98FF" style={{ transform: [{ rotate: '180deg' }] }} />
+                    <ChevronLeft size={20} color="#CA98FF" />
                   </Pressable>
                   <Pressable
                     style={{
@@ -753,18 +831,26 @@ export default function StudentScreen() {
               </ScrollView>
 
               {/* Events List */}
-              <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#CA98FF', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
+              <Text style={{ fontSize: 14 * fontScale, fontWeight: 'bold', color: '#CA98FF', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
                 Aujourd'hui
               </Text>
-              {EVENTS.map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </Animated.View>
+              {loading ? (
+                <ActivityIndicator color="#CA98FF" />
+              ) : events.length === 0 ? (
+                <Text style={{ fontSize: 14 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', textAlign: 'center' }}>
+                  Aucun événement disponible
+                </Text>
+              ) : (
+                events.map((event: Event) => (
+                  <EventCard key={event.id} event={event} />
+                ))
+              )}
+            </View>
           )}
 
           {/* OPPORTUNITES TAB */}
           {activeTab === 'opportunites' && (
-            <Animated.View entering={FadeInUp.duration(300)}>
+            <View>
               {/* Tab filters */}
               <View style={{ flexDirection: 'row', marginBottom: 20 }}>
                 {['Offres', 'Opportunités', 'Mentors'].map((tab, index) => (
@@ -818,9 +904,17 @@ export default function StudentScreen() {
               </ScrollView>
 
               {/* Opportunity Cards */}
-              {OPPORTUNITIES.map((opp) => (
-                <OpportunityCard key={opp.id} opportunity={opp} />
-              ))}
+              {loading ? (
+                <ActivityIndicator color="#CA98FF" />
+              ) : opportunities.length === 0 ? (
+                <Text style={{ fontSize: 14 * fontScale, color: isDark ? '#AAA8C3' : '#74738B', textAlign: 'center', marginTop: 20 }}>
+                  Aucune opportunité disponible
+                </Text>
+              ) : (
+                opportunities.map((opp: Opportunity) => (
+                  <OpportunityCard key={opp.id} opportunity={opp} />
+                ))
+              )}
 
               {/* CTA Card */}
               <GlassmorphismCard
@@ -855,7 +949,7 @@ export default function StudentScreen() {
                   </View>
                 </View>
               </GlassmorphismCard>
-            </Animated.View>
+            </View>
           )}
         </View>
       </ScrollView>

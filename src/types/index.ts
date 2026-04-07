@@ -4,6 +4,7 @@ export interface Profile {
   full_name: string | null;
   bio: string | null;
   avatar_url: string | null;
+  cover_url: string | null;
   // Student fields (optional)
   is_student: boolean | null;  // null = not chosen yet, true = student, false = non-student
   university: string | null;

@@ -13,20 +13,45 @@
       "backgroundColor": "#8A2BE2"
     },
     "assetBundlePatterns": ["**/*"],
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#8A2BE2",
+          "sounds": ["./assets/notification-sound.wav"]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "LinkUp a besoin d'accéder à vos photos pour créer des publications et stories.",
+          "cameraPermission": "LinkUp a besoin d'accéder à votre caméra pour prendre des photos."
+        }
+      ]
+    ],
     "experiments": {
       "tsconfigPaths": true
     },
-    "newArchEnabled": true
-  },
-  "plugins": [
-    [
-      "expo-notifications",
-      {
-        "icon": "./assets/notification-icon.png",
-        "color": "#8A2BE2",
-        "sounds": ["./assets/notification-sound.wav"]
-      }
-    ]
-  ]
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.linkup.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#8A2BE2"
+      },
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.linkup.app"
+    }
+  }
 }

@@ -4,9 +4,6 @@ import { useTheme } from '../lib/theme';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../providers/AuthProvider';
 import * as ImagePicker from 'expo-image-picker';
-import Animated, { useAnimatedStyle, withSpring, useSharedValue } from 'react-native-reanimated';
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 interface AvatarUploadProps {
   size?: number;
@@ -19,24 +16,10 @@ export function AvatarUpload({ size = 100, url, onUpload, editable = true }: Ava
   const { colors } = useTheme();
   const { session } = useAuth();
   const [uploading, setUploading] = useState(false);
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.95, { stiffness: 400, damping: 17 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { stiffness: 400, damping: 17 });
-  };
 
   const pickImage = async () => {
     if (!editable) return;
 
-    // Request permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permission requise', 'Nous avons besoin de la permission pour accéder à vos photos.');
@@ -65,16 +48,13 @@ export function AvatarUpload({ size = 100, url, onUpload, editable = true }: Ava
 
     setUploading(true);
     try {
-      // Convertir l'URI en blob
       const response = await fetch(uri);
       const blob = await response.blob();
 
-      // Générer un nom de fichier unique
       const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${session.user.id}-${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
-      // Upload vers Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('profiles')
         .upload(filePath, blob);
@@ -83,7 +63,6 @@ export function AvatarUpload({ size = 100, url, onUpload, editable = true }: Ava
         throw uploadError;
       }
 
-      // Récupérer l'URL publique
       const { data: { publicUrl } } = supabase.storage
         .from('profiles')
         .getPublicUrl(filePath);
@@ -100,26 +79,21 @@ export function AvatarUpload({ size = 100, url, onUpload, editable = true }: Ava
 
   return (
     <View style={{ alignItems: 'center' }}>
-      <AnimatedPressable
+      <Pressable
         onPress={pickImage}
         disabled={!editable || uploading}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        style={[
-          {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-            backgroundColor: colors.surface,
-            overflow: 'hidden',
-            shadowColor: colors.primary,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 6,
-          },
-          animatedStyle,
-        ]}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: colors.surface,
+          overflow: 'hidden',
+          shadowColor: colors.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 6,
+        }}
       >
         {url ? (
           <Image
@@ -178,7 +152,7 @@ export function AvatarUpload({ size = 100, url, onUpload, editable = true }: Ava
             </Text>
           </View>
         )}
-      </AnimatedPressable>
+      </Pressable>
     </View>
   );
 }

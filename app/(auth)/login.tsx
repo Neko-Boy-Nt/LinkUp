@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../src/lib/supabase';
 import { useTheme } from '../../src/lib/theme';
-import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react-native';
 
@@ -41,7 +40,6 @@ export default function LoginScreen() {
     }
   };
 
-  // Glassmorphism background colors
   const glassBg = isDark ? 'rgba(35, 35, 63, 0.4)' : 'rgba(248, 245, 255, 0.6)';
   const inputBg = isDark ? '#111127' : '#F8F5FF';
 
@@ -55,13 +53,11 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Background gradients */}
         <View style={{ position: 'absolute', top: '-10%', right: '-10%', width: '50%', height: '50%', backgroundColor: 'rgba(156, 66, 244, 0.15)', borderRadius: 999 }} />
         <View style={{ position: 'absolute', bottom: '-10%', left: '-10%', width: '50%', height: '50%', backgroundColor: 'rgba(82, 12, 112, 0.15)', borderRadius: 999 }} />
 
         <View style={{ flex: 1, padding: 24, justifyContent: 'center' }}>
-          {/* Branding Section */}
-          <Animated.View entering={FadeInDown.delay(100).springify()} style={{ alignItems: 'center', marginBottom: 40 }}>
+          <View style={{ alignItems: 'center', marginBottom: 40 }}>
             <LinearGradient
               colors={['#CA98FF', '#9C42F4']}
               style={{
@@ -71,25 +67,19 @@ export default function LoginScreen() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: 24,
-                shadowColor: '#CA98FF',
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.4,
-                shadowRadius: 20,
               }}
             >
               <Text style={{ fontSize: 32, fontWeight: '900', color: '#FFF' }}>L</Text>
             </LinearGradient>
-            <Text style={{ fontSize: 28, fontWeight: '800', color: colors.text, letterSpacing: -1 }}>
+            <Text style={{ fontSize: 28, fontWeight: '800', color: colors.text }}>
               Bon retour
             </Text>
-            <Text style={{ fontSize: 14, color: isDark ? '#AAA8C3' : '#74738B', marginTop: 8, fontWeight: '500', letterSpacing: 0.5 }}>
+            <Text style={{ fontSize: 14, color: isDark ? '#AAA8C3' : '#74738B', marginTop: 8 }}>
               Connectez-vous pour continuer sur LinkUp
             </Text>
-          </Animated.View>
+          </View>
 
-          {/* Form Section */}
-          <Animated.View 
-            entering={FadeInUp.delay(200).springify()}
+          <View
             style={{
               backgroundColor: glassBg,
               borderRadius: 20,
@@ -99,20 +89,11 @@ export default function LoginScreen() {
             }}
           >
             {error ? (
-              <Animated.Text
-                entering={FadeIn}
-                style={{
-                  color: '#FF6B6B',
-                  textAlign: 'center',
-                  marginBottom: 16,
-                  fontSize: 14,
-                }}
-              >
+              <Text style={{ color: '#FF6B6B', textAlign: 'center', marginBottom: 16, fontSize: 14 }}>
                 {error}
-              </Animated.Text>
+              </Text>
             ) : null}
 
-            {/* Email Field */}
             <View style={{ marginBottom: 20 }}>
               <Text style={{ fontSize: 10, fontWeight: '700', color: isDark ? '#AAA8C3' : '#74738B', marginLeft: 16, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
                 Email
@@ -131,7 +112,6 @@ export default function LoginScreen() {
               </View>
             </View>
 
-            {/* Password Field */}
             <View style={{ marginBottom: 8 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginLeft: 16, marginBottom: 6 }}>
                 <Text style={{ fontSize: 10, fontWeight: '700', color: isDark ? '#AAA8C3' : '#74738B', textTransform: 'uppercase', letterSpacing: 1 }}>
@@ -163,7 +143,6 @@ export default function LoginScreen() {
               </View>
             </View>
 
-            {/* Submit Button */}
             <Pressable
               onPress={handleLogin}
               disabled={loading}
@@ -179,11 +158,6 @@ export default function LoginScreen() {
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  shadowColor: '#9C42F4',
-                  shadowOffset: { width: 0, height: 10 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 20,
-                  elevation: 8,
                 }}
               >
                 <Text style={{ fontSize: 16, fontWeight: '700', color: '#000', marginRight: 8 }}>
@@ -193,7 +167,6 @@ export default function LoginScreen() {
               </LinearGradient>
             </Pressable>
 
-            {/* Footer Section */}
             <View style={{ marginTop: 24, alignItems: 'center' }}>
               <Text style={{ color: isDark ? '#AAA8C3' : '#74738B', fontSize: 14 }}>
                 Pas encore de compte ?{' '}
@@ -202,57 +175,15 @@ export default function LoginScreen() {
                 </Text>
               </Text>
             </View>
+          </View>
 
-            {/* Social Auth Divider */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 24 }}>
-              <View style={{ flex: 1, height: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
-              <Text style={{ fontSize: 10, fontWeight: '900', color: isDark ? '#74738B' : '#AAA8C3', marginHorizontal: 12, textTransform: 'uppercase', letterSpacing: 2 }}>
-                Ou utiliser
-              </Text>
-              <View style={{ flex: 1, height: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
-            </View>
-
-            {/* Secondary Auth Buttons */}
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <Pressable
-                style={{
-                  flex: 1,
-                  height: 48,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{ fontSize: 18 }}>G</Text>
-              </Pressable>
-              <Pressable
-                style={{
-                  flex: 1,
-                  height: 48,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{ fontSize: 18 }}>🍎</Text>
-              </Pressable>
-            </View>
-          </Animated.View>
-
-          {/* Back to home */}
-          <Animated.View entering={FadeIn.delay(400)} style={{ alignItems: 'center', marginTop: 24 }}>
+          <View style={{ alignItems: 'center', marginTop: 24 }}>
             <Pressable onPress={() => router.push('/')}>
               <Text style={{ color: isDark ? '#AAA8C3' : '#74738B', fontSize: 12, fontWeight: '500', textTransform: 'uppercase', letterSpacing: 2 }}>
                 ← Retour à l'accueil
               </Text>
             </Pressable>
-          </Animated.View>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTheme } from '../src/lib/theme';
 import { supabase } from '../src/lib/supabase';
-import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Users, BookOpen, MessageCircle, GraduationCap, User } from 'lucide-react-native';
 
@@ -67,17 +66,17 @@ export default function WelcomeScreen() {
         <View style={{ position: 'absolute', bottom: '-5%', left: '-5%', width: '50%', height: '40%', backgroundColor: 'rgba(156, 66, 244, 0.1)', borderRadius: 999 }} />
 
         <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 24, justifyContent: 'center' }} showsVerticalScrollIndicator={false}>
-          <Animated.View entering={FadeInDown.delay(100).springify()} style={{ alignItems: 'center', marginBottom: 40 }}>
+          <View style={{ alignItems: 'center', marginBottom: 40 }}>
             <Text style={{ fontSize: 32, fontWeight: '900', color: colors.text, letterSpacing: -1, textAlign: 'center' }}>
               Quel est votre profil ?
             </Text>
             <Text style={{ fontSize: 16, color: isDark ? '#AAA8C3' : '#74738B', marginTop: 12, textAlign: 'center' }}>
               Cela nous permettra de personnaliser votre expérience
             </Text>
-          </Animated.View>
+          </View>
 
           {/* Student Option */}
-          <Animated.View entering={FadeInUp.delay(200).springify()}>
+          <View>
             <Pressable
               onPress={() => handleProfileChoice(true)}
               disabled={loading}
@@ -112,10 +111,10 @@ export default function WelcomeScreen() {
                 </View>
               </LinearGradient>
             </Pressable>
-          </Animated.View>
+          </View>
 
           {/* Non-Student Option */}
-          <Animated.View entering={FadeInUp.delay(300).springify()}>
+          <View>
             <Pressable
               onPress={() => handleProfileChoice(false)}
               disabled={loading}
@@ -145,7 +144,7 @@ export default function WelcomeScreen() {
                 </View>
               </View>
             </Pressable>
-          </Animated.View>
+          </View>
         </ScrollView>
       </View>
     );
@@ -162,7 +161,7 @@ export default function WelcomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Logo Section */}
-        <Animated.View entering={FadeInDown.delay(100).springify()} style={{ alignItems: 'center', marginTop: 60, marginBottom: 32 }}>
+        <View style={{ alignItems: 'center', marginTop: 60, marginBottom: 32 }}>
           <LinearGradient
             colors={['#CA98FF', '#9C42F4']}
             style={{
@@ -183,24 +182,23 @@ export default function WelcomeScreen() {
           <Text style={{ fontSize: 40, fontWeight: '900', color: colors.text, letterSpacing: -2 }}>
             LinkUp
           </Text>
-        </Animated.View>
+        </View>
 
         {/* Welcome Message */}
-        <Animated.View entering={FadeInUp.delay(200).springify()} style={{ alignItems: 'center', marginBottom: 40 }}>
+        <View style={{ alignItems: 'center', marginBottom: 40 }}>
           <Text style={{ fontSize: 28, fontWeight: '800', color: colors.text, textAlign: 'center', letterSpacing: -1 }}>
             L'excellence académique,{'\n'}le lien en plus.
           </Text>
           <Text style={{ fontSize: 16, color: isDark ? '#AAA8C3' : '#74738B', textAlign: 'center', marginTop: 16, lineHeight: 24, fontWeight: '400' }}>
             Bienvenue dans votre nouvel écosystème étudiant. Un espace fluide conçu pour connecter vos ambitions, vos projets et vos rencontres.
           </Text>
-        </Animated.View>
+        </View>
 
         {/* Feature Bento Grid */}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 40 }}>
           {features.map((feature, index) => (
-            <Animated.View
+            <View
               key={feature.title}
-              entering={FadeInUp.delay(300 + index * 100).springify()}
               style={{
                 flex: 1,
                 minWidth: feature.featured ? '100%' : '45%',
@@ -232,12 +230,12 @@ export default function WelcomeScreen() {
               <Text style={{ fontSize: 13, color: isDark ? '#AAA8C3' : '#74738B', lineHeight: 20 }}>
                 {feature.description}
               </Text>
-            </Animated.View>
+            </View>
           ))}
         </View>
 
         {/* CTA Button */}
-        <Animated.View entering={FadeInUp.delay(600).springify()}>
+        <View>
           <Pressable onPress={() => setStep('choice')}>
             <LinearGradient
               colors={['#CA98FF', '#9C42F4']}
@@ -260,14 +258,14 @@ export default function WelcomeScreen() {
               </Text>
             </LinearGradient>
           </Pressable>
-        </Animated.View>
+        </View>
 
         {/* Footer Quote */}
-        <Animated.View entering={FadeInUp.delay(700).springify()} style={{ alignItems: 'center', marginTop: 32, marginBottom: 40 }}>
+        <View style={{ alignItems: 'center', marginTop: 32, marginBottom: 40 }}>
           <Text style={{ fontSize: 10, fontWeight: '600', color: isDark ? '#74738B' : '#AAA8C3', textTransform: 'uppercase', letterSpacing: 2 }}>
             Conçu pour la nouvelle génération d'étudiants
           </Text>
-        </Animated.View>
+        </View>
       </ScrollView>
     </View>
   );

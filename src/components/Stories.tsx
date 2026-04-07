@@ -13,14 +13,6 @@ import {
 import { useTheme } from '../lib/theme';
 import { useAuth } from '../providers/AuthProvider';
 import { supabase } from '../lib/supabase';
-import Animated, { 
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-  runOnJS
-} from 'react-native-reanimated';
 import { Story, Profile } from '../types';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -44,7 +36,6 @@ export function StoryRing({
   size = 'medium'
 }: StoryRingProps) {
   const { colors } = useTheme();
-  const scale = useSharedValue(1);
 
   const getSize = () => {
     switch (size) {
@@ -56,82 +47,64 @@ export function StoryRing({
 
   const s = getSize();
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePressIn = () => {
-    scale.value = withTiming(0.95, { duration: 100 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withTiming(1, { duration: 100 });
-    onPress();
-  };
-
   return (
-    <Animated.View style={animatedStyle}>
-      <Pressable 
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        style={{ alignItems: 'center', marginRight: 12 }}
+    <Pressable 
+      onPress={onPress}
+      style={{ alignItems: 'center', marginRight: 12 }}
+    >
+      <View
+        style={{
+          width: s.ring,
+          height: s.ring,
+          borderRadius: s.ring / 2,
+          padding: 3,
+          backgroundColor: 'transparent',
+          borderWidth: hasUnseenStories ? 3 : 0,
+          borderColor: hasUnseenStories ? colors.primary : 'transparent',
+          borderStyle: 'dashed',
+        }}
       >
-        <View
-          style={{
-            width: s.ring,
-            height: s.ring,
-            borderRadius: s.ring / 2,
-            padding: 3,
-            backgroundColor: hasUnseenStories ? 'transparent' : 'transparent',
-            ...(hasUnseenStories && {
-              borderWidth: 3,
-              borderColor: colors.primary,
-            }),
-            borderStyle: hasUnseenStories ? 'dashed' : 'solid',
-          }}
-        >
-          {avatarUrl ? (
-            <Image
-              source={{ uri: avatarUrl }}
-              style={{
-                width: s.avatar,
-                height: s.avatar,
-                borderRadius: s.avatar / 2,
-              }}
-            />
-          ) : (
-            <View
-              style={{
-                width: s.avatar,
-                height: s.avatar,
-                borderRadius: s.avatar / 2,
-                backgroundColor: colors.primary,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text style={{ color: '#FFF', fontWeight: 'bold', fontSize: s.font }}>
-                {(fullName || '?').charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
-        </View>
-        {fullName && (
-          <Text 
-            numberOfLines={1}
-            style={{ 
-              fontSize: 11, 
-              color: hasUnseenStories ? colors.text : '#888', 
-              marginTop: 4,
-              maxWidth: s.ring,
-              fontWeight: hasUnseenStories ? '600' : '400',
+        {avatarUrl ? (
+          <Image
+            source={{ uri: avatarUrl }}
+            style={{
+              width: s.avatar,
+              height: s.avatar,
+              borderRadius: s.avatar / 2,
+            }}
+          />
+        ) : (
+          <View
+            style={{
+              width: s.avatar,
+              height: s.avatar,
+              borderRadius: s.avatar / 2,
+              backgroundColor: colors.primary,
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            {fullName.split(' ')[0]}
-          </Text>
+            <Text style={{ color: '#FFF', fontWeight: 'bold', fontSize: s.font }}>
+              {(fullName || '?').charAt(0).toUpperCase()}
+            </Text>
+          </View>
         )}
-      </Pressable>
-    </Animated.View>
+      </View>
+      {fullName && (
+        <Text 
+          numberOfLines={1}
+          style={{ 
+            fontSize: 11, 
+            color: hasUnseenStories ? colors.text : '#888', 
+            marginTop: 4,
+            maxWidth: s.ring,
+            fontWeight: hasUnseenStories ? '600' : '400',
+          }}
+        >
+          {fullName.split(' ')[0]}
+        </Text>
+      )}
+    </Pressable>
   );
 }
 
@@ -148,33 +121,33 @@ export function StoryViewer({ visible, stories, initialIndex, onClose, onViewSto
   const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [progress, setProgress] = useState(0);
-  const progressAnim = useSharedValue(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const STORY_DURATION = 5000; // 5 seconds per story
+  const STORY_DURATION = 5000;
 
   const currentStory = stories[currentIndex];
   const isMyStory = currentStory?.user_id === user?.id;
 
   useEffect(() => {
     if (visible && currentStory) {
-      progressAnim.value = 0;
       setProgress(0);
       
-      // Mark as viewed
       if (!currentStory.has_viewed && !isMyStory) {
         onViewStory(currentStory.id);
       }
 
-      // Start progress animation
-      progressAnim.value = withTiming(100, { 
-        duration: STORY_DURATION 
-      }, (finished) => {
-        if (finished) {
-          runOnJS(goToNext)();
-        }
-      });
+      const interval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            goToNext();
+            return 0;
+          }
+          return prev + (100 / (STORY_DURATION / 100));
+        });
+      }, 100);
 
       return () => {
+        clearInterval(interval);
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
         }
@@ -206,7 +179,7 @@ export function StoryViewer({ visible, stories, initialIndex, onClose, onViewSto
   };
 
   const handleLongPress = () => {
-    progressAnim.value = progressAnim.value; // Pause animation
+    // Pause not implemented in simple version
   };
 
   const deleteStory = async () => {
@@ -245,7 +218,6 @@ export function StoryViewer({ visible, stories, initialIndex, onClose, onViewSto
     >
       <StatusBar hidden />
       <View style={{ flex: 1, backgroundColor: '#000' }}>
-        {/* Progress bars */}
         <View 
           style={{ 
             position: 'absolute', 
@@ -278,7 +250,6 @@ export function StoryViewer({ visible, stories, initialIndex, onClose, onViewSto
           ))}
         </View>
 
-        {/* Header */}
         <View 
           style={{ 
             position: 'absolute', 
@@ -334,7 +305,6 @@ export function StoryViewer({ visible, stories, initialIndex, onClose, onViewSto
           </Pressable>
         </View>
 
-        {/* Story Content */}
         <Pressable 
           onPress={handleTap}
           onLongPress={handleLongPress}
@@ -376,7 +346,6 @@ export function StoryViewer({ visible, stories, initialIndex, onClose, onViewSto
           )}
         </Pressable>
 
-        {/* Views count (for my stories) */}
         {isMyStory && (
           <View 
             style={{ 
@@ -398,7 +367,6 @@ export function StoryViewer({ visible, stories, initialIndex, onClose, onViewSto
           </View>
         )}
 
-        {/* Tap zones indicator */}
         <View 
           style={{ 
             position: 'absolute', 
@@ -423,7 +391,6 @@ export function StoryViewer({ visible, stories, initialIndex, onClose, onViewSto
   );
 }
 
-// Component to add new story
 export function AddStoryButton({ onStoryAdded }: { onStoryAdded: () => void }) {
   const { colors } = useTheme();
   const { user, profile } = useAuth();
@@ -538,7 +505,6 @@ export function AddStoryButton({ onStoryAdded }: { onStoryAdded: () => void }) {
             Nouvelle story
           </Text>
 
-          {/* Type Selector */}
           <View style={{ flexDirection: 'row', marginBottom: 20, gap: 12 }}>
             <Pressable
               onPress={() => setStoryType('text')}

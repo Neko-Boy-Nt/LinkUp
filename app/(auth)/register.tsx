@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { supabase } from '../../src/lib/supabase';
 import { useTheme } from '../../src/lib/theme';
-import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { User, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react-native';
 
@@ -36,7 +35,8 @@ export default function RegisterScreen() {
       email,
       password,
       options: {
-        data: { full_name: fullName }
+        data: { full_name: fullName },
+        emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/(auth)/login` : undefined
       }
     });
     setLoading(false);
@@ -55,7 +55,7 @@ export default function RegisterScreen() {
   if (success) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background, padding: 24, justifyContent: 'center', alignItems: 'center' }}>
-        <Animated.View entering={FadeInDown.springify()} style={{ alignItems: 'center' }}>
+        <View style={{ alignItems: 'center' }}>
           <LinearGradient
             colors={['#22C55E', '#16A34A']}
             style={{
@@ -88,7 +88,7 @@ export default function RegisterScreen() {
               Aller à la connexion
             </Text>
           </Pressable>
-        </Animated.View>
+        </View>
       </View>
     );
   }
@@ -109,7 +109,7 @@ export default function RegisterScreen() {
 
         <View style={{ flex: 1, padding: 24, justifyContent: 'center' }}>
           {/* Brand Identity */}
-          <Animated.View entering={FadeInDown.delay(100).springify()} style={{ alignItems: 'center', marginBottom: 40 }}>
+          <View style={{ alignItems: 'center', marginBottom: 40 }}>
             <View style={{ position: 'relative', marginBottom: 24 }}>
               <LinearGradient
                 colors={['#CA98FF', '#9C42F4']}
@@ -130,11 +130,11 @@ export default function RegisterScreen() {
             <Text style={{ fontSize: 14, color: isDark ? '#AAA8C3' : '#74738B', marginTop: 8, fontWeight: '500' }}>
               L'excellence académique à portée de clic
             </Text>
-          </Animated.View>
+          </View>
 
           {/* Main Form */}
-          <Animated.View 
-            entering={FadeInUp.delay(200).springify()}
+          <View 
+           
             style={{
               backgroundColor: glassBg,
               borderRadius: 16,
@@ -144,8 +144,8 @@ export default function RegisterScreen() {
             }}
           >
             {error ? (
-              <Animated.Text
-                entering={FadeIn}
+              <Text
+               
                 style={{
                   color: '#FF6B6B',
                   textAlign: 'center',
@@ -154,7 +154,7 @@ export default function RegisterScreen() {
                 }}
               >
                 {error}
-              </Animated.Text>
+              </Text>
             ) : null}
 
             {/* Full Name Field */}
@@ -292,10 +292,10 @@ export default function RegisterScreen() {
                 <Text style={{ fontSize: 12, fontWeight: '700', color: colors.text }}>Apple</Text>
               </Pressable>
             </View>
-          </Animated.View>
+          </View>
 
           {/* Footer */}
-          <Animated.View entering={FadeIn.delay(400)} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 24 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 24 }}>
             <Text style={{ color: isDark ? '#AAA8C3' : '#74738B', fontSize: 14 }}>
               Déjà membre ?{' '}
             </Text>
@@ -304,7 +304,7 @@ export default function RegisterScreen() {
                 Connectez-vous
               </Text>
             </Pressable>
-          </Animated.View>
+          </View>
 
           {/* Terms */}
           <Text style={{ fontSize: 10, color: isDark ? '#74738B' : '#AAA8C3', textAlign: 'center', marginTop: 16, textTransform: 'uppercase', letterSpacing: 1, paddingHorizontal: 20 }}>

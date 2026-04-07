@@ -17,7 +17,7 @@ import { supabase } from '../../src/lib/supabase';
 import { GlassmorphismCard } from '../../src/components/GlassmorphismCard';
 import { StoryViewer } from '../../src/components/Stories';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
+
 import { 
   Plus,
   Flame,
@@ -109,7 +109,7 @@ function StoryRingItem({
             height: 72,
             borderRadius: 36,
             borderWidth: 2,
-            borderStyle: isMyStory ? 'dashed' : 'solid',
+            borderStyle: 'dashed',
             borderColor: isDark ? '#46465C' : '#E5E3FF',
             padding: 3,
             backgroundColor: isDark ? '#1D1D37' : '#F8F5FF',
@@ -184,20 +184,32 @@ function StoriesBar({ onRefresh }: { onRefresh: () => void }) {
     try {
       const now = new Date().toISOString();
       
-      const { data, error } = await supabase
+      // Fetch stories without profile relationship
+      const { data: storiesData, error: storiesError } = await supabase
         .from('stories')
         .select(`
           *,
-          profile:profiles(*),
           views:story_views(viewer_id)
         `)
         .gt('expires_at', now)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (storiesError) throw storiesError;
+      
+      // Fetch profiles separately
+      const userIds = [...new Set((storiesData || []).map(s => s.user_id))];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', userIds);
+      
+      if (profilesError) throw profilesError;
+      
+      const profilesMap = new Map((profilesData || []).map(p => [p.id, p]));
 
-      const storiesWithViewStatus = (data || []).map((story: any) => ({
+      const storiesWithViewStatus = (storiesData || []).map((story: any) => ({
         ...story,
+        profile: profilesMap.get(story.user_id),
         has_viewed: story.views?.some((v: any) => v.viewer_id === user?.id) || story.user_id === user?.id,
       }));
 
@@ -327,7 +339,7 @@ function PostCard({
   };
 
   return (
-    <Animated.View entering={FadeInUp.springify()} style={{ marginBottom: 24 }}>
+    <View style={{ marginBottom: 24 }}>
       <GlassmorphismCard intensity="medium" style={{ overflow: 'hidden' }}>
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16, paddingBottom: 12 }}>
@@ -484,7 +496,7 @@ function PostCard({
           )}
         </View>
       </GlassmorphismCard>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -878,24 +890,65 @@ export default function HomeScreen() {
 
   const loadPosts = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch posts without profile relationships
+      const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select(`
           *,
-          profile:profiles(*),
-          likes:likes(user_id),
-          original_post:posts(*, profile:profiles(*)),
-          comments:comments(*, profile:profiles(*))
+          likes:likes(user_id)
         `)
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (postsError) throw postsError;
+      
+      // Fetch user profiles separately
+      const userIds = [...new Set((postsData || []).map(p => p.user_id))];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', userIds);
+      
+      if (profilesError) throw profilesError;
+      
+      const profilesMap = new Map((profilesData || []).map(p => [p.id, p]));
+      
+      // Fetch comments separately
+      const postIds = (postsData || []).map(p => p.id);
+      const { data: commentsData } = await supabase
+        .from('comments')
+        .select('*')
+        .in('post_id', postIds)
+        .order('created_at', { ascending: false });
+      
+      // Fetch comment authors' profiles
+      const commentUserIds = [...new Set((commentsData || []).map(c => c.user_id))];
+      const { data: commentProfilesData } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', commentUserIds);
+      
+      const commentProfilesMap = new Map((commentProfilesData || []).map(p => [p.id, p]));
+      
+      const commentsWithProfiles = (commentsData || []).map(c => ({
+        ...c,
+        profile: commentProfilesMap.get(c.user_id)
+      }));
+      
+      const commentsMap = new Map();
+      commentsWithProfiles.forEach(c => {
+        if (!commentsMap.has(c.post_id)) {
+          commentsMap.set(c.post_id, []);
+        }
+        commentsMap.get(c.post_id).push(c);
+      });
 
-      const postsWithLikeStatus = (data || []).map((post: any) => ({
+      const postsWithLikeStatus = (postsData || []).map((post: any) => ({
         ...post,
+        profile: profilesMap.get(post.user_id),
         has_liked: post.likes?.some((like: any) => like.user_id === user?.id),
-        latest_comment: post.comments?.[0],
+        latest_comment: commentsMap.get(post.id)?.[0],
+        comments: commentsMap.get(post.id) || [],
       }));
 
       setPosts(postsWithLikeStatus);
@@ -1041,11 +1094,11 @@ export default function HomeScreen() {
           ))}
           
           {posts.length === 0 && !loading && (
-            <Animated.View entering={FadeInDown.springify()} style={{ alignItems: 'center', paddingTop: 60 }}>
+            <View style={{ alignItems: 'center', paddingTop: 60 }}>
               <Flame size={64} color={isDark ? '#AAA8C3' : '#74738B'} />
               <Text style={{ fontSize: 18, color: colors.text, fontWeight: '600', marginTop: 16, marginBottom: 8 }}>No posts yet</Text>
               <Text style={{ fontSize: 14, color: isDark ? '#AAA8C3' : '#74738B', textAlign: 'center' }}>Be the first to share something!</Text>
-            </Animated.View>
+            </View>
           )}
         </View>
       </ScrollView>
