@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#8A2BE2"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "plugins": [
       "expo-router",
       [
@@ -20,7 +22,9 @@
         {
           "icon": "./assets/notification-icon.png",
           "color": "#8A2BE2",
-          "sounds": ["./assets/notification-sound.wav"]
+          "sounds": [
+            "./assets/notification-sound.wav"
+          ]
         }
       ],
       [
@@ -52,6 +56,13 @@
     },
     "ios": {
       "bundleIdentifier": "com.linkup.app"
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d66dd5a7-307f-4c48-b450-e057de7bd15e"
+      }
+    },
+    "owner": "nicemank"
   }
 }
