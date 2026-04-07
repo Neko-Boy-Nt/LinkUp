@@ -20,11 +20,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
-          "color": "#8A2BE2",
-          "sounds": [
-            "./assets/notification-sound.wav"
-          ]
+          "color": "#8A2BE2"
         }
       ],
       [
