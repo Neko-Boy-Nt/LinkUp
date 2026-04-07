@@ -54,8 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchProfile(session.user.id);
       } else {
         setProfile(null);
-        setLoading(false); using ref to avoid stale closure
-      }Ref.current
+        setLoading(false);
+      }
 
       if (session) {
         // Si connecté et qu'on est sur une page auth → rediriger
