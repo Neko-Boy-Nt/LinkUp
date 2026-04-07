@@ -27,6 +27,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isStudent = profile?.is_student ?? null;
   const needsOnboarding = !profile?.has_completed_onboarding || profile?.is_student === null;
+  
+  // Use ref to avoid stale closure in auth state listener
+  const needsOnboardingRef = useRef(needsOnboarding);
+  useEffect(() => {
+    needsOnboardingRef.current = needsOnboarding;
+  }, [needsOnboarding]);
 
   useEffect(() => {
     // Récupérer la session initiale
@@ -48,8 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchProfile(session.user.id);
       } else {
         setProfile(null);
-        setLoading(false);
-      }
+        setLoading(false); using ref to avoid stale closure
+      }Ref.current
 
       if (session) {
         // Si connecté et qu'on est sur une page auth → rediriger

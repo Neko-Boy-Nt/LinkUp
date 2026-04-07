@@ -16,7 +16,7 @@ export function useTypingIndicator(
   userId: string,
   onTypingChange: (typingUsers: string[]) => void
 ) {
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Subscribe to typing indicators
@@ -126,7 +126,7 @@ export function useGroupTypingIndicator(
   userId: string,
   onTypingChange: (typingUsers: { userId: string; username?: string }[]) => void
 ) {
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const typingUsersRef = useRef<Map<string, { timestamp: number; username?: string }>>(new Map());
 

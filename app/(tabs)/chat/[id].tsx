@@ -438,7 +438,7 @@ export default function ChatScreen() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   
   const scrollViewRef = useRef<ScrollView>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load messages and conversation details
   useEffect(() => {
@@ -468,6 +468,10 @@ export default function ChatScreen() {
     return () => {
       subscription.unsubscribe();
       unsubscribeTyping?.();
+      // Clear typing timeout on unmount
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     };
   }, [id, user?.id]);
 
@@ -748,6 +752,8 @@ export default function ChatScreen() {
                   </Text>
                 </View>
               )}
+            </View>
+            <View style={{ marginLeft: 12 }}>
               <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text, letterSpacing: -0.3 }}>
                 {otherUser?.full_name || 'User'}
               </Text>

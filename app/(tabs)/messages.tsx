@@ -389,7 +389,7 @@ function AddContactModal({ visible, onClose, onContactAdded }: { visible: boolea
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .or(`username.ilike.%${searchQuery}%,full_name.ilike.%${searchQuery}%`)
+        .or(`username.ilike.${'%' + searchQuery + '%'},full_name.ilike.${'%' + searchQuery + '%'}`)
         .limit(10);
 
       if (error) throw error;

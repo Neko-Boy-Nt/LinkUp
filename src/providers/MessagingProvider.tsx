@@ -8,7 +8,7 @@ type MessagingContextType = {
   currentConversation: Conversation | null;
   messages: Message[];
   loading: boolean;
-  sendMessage: (content: string, conversationId: string) => Promise<void>;
+  sendMessage: (conversationId: string, content: string) => Promise<void>;
   loadConversation: (conversationId: string) => Promise<void>;
   createConversation: (participantIds: string[]) => Promise<string | null>;
   markAsRead: (conversationId: string) => Promise<void>;
@@ -162,7 +162,7 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
     await markAsRead(conversationId);
   };
 
-  const sendMessage = async (content: string, conversationId: string) => {
+  const sendMessage = async (conversationId: string, content: string) => {
     if (!user?.id || !content.trim()) return;
 
     const { error } = await supabase

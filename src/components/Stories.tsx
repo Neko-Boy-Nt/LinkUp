@@ -121,7 +121,7 @@ export function StoryViewer({ visible, stories, initialIndex, onClose, onViewSto
   const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [progress, setProgress] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const STORY_DURATION = 5000;
 
   const currentStory = stories[currentIndex];
@@ -148,9 +148,6 @@ export function StoryViewer({ visible, stories, initialIndex, onClose, onViewSto
 
       return () => {
         clearInterval(interval);
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
       };
     }
   }, [visible, currentIndex, currentStory]);
