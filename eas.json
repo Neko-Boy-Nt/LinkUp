@@ -17,6 +17,12 @@
       "android": {
         "buildType": "apk"
       }
+    },
+    "LinkUp": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {
