@@ -5,12 +5,20 @@ import { View } from 'react-native';
 import { AuthProvider } from '../src/providers/AuthProvider';
 import { MessagingProvider } from '../src/providers/MessagingProvider';
 import { NotificationsProvider } from '../src/providers/NotificationsProvider';
+import { ErrorLoggerProvider, showErrorSummary } from '../src/providers/ErrorLoggerProvider';
 
 export default function RootLayout() {
   const { colors } = useTheme();
 
+  if (__DEV__) {
+    setTimeout(() => {
+      showErrorSummary();
+    }, 5000);
+  }
+
   return (
-    <AuthProvider>
+    <ErrorLoggerProvider>
+      <AuthProvider>
       <NotificationsProvider>
         <MessagingProvider>
           <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -23,5 +31,6 @@ export default function RootLayout() {
         </MessagingProvider>
       </NotificationsProvider>
     </AuthProvider>
+    </ErrorLoggerProvider>
   );
 }

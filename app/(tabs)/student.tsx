@@ -28,6 +28,7 @@ import {
   Download,
   Clock,
   MapPin,
+  ChevronLeft,
   ChevronRight,
   FileText,
   Video,

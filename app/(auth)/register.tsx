@@ -6,6 +6,38 @@ import { useTheme } from '../../src/lib/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { User, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react-native';
 
+// Fonction pour traduire les erreurs Supabase en français
+const translateAuthError = (error: any): string => {
+  if (!error) return 'Une erreur est survenue';
+  
+  const message = error.message || error.toString();
+  
+  // Erreurs d'inscription
+  if (message.includes('User already registered')) {
+    return 'Un compte existe déjà avec cet email';
+  }
+  if (message.includes('Email signups are disabled')) {
+    return 'Les inscriptions par email sont désactivées';
+  }
+  if (message.includes('password')) {
+    return 'Le mot de passe est trop faible (minimum 6 caractères)';
+  }
+  if (message.includes('Invalid email')) {
+    return 'Adresse email invalide';
+  }
+  if (message.includes('rate limit')) {
+    return 'Trop de tentatives. Réessaie dans quelques minutes';
+  }
+  if (message.includes('network')) {
+    return 'Problème de connexion internet. Vérifie ta connexion';
+  }
+  if (message.includes('timeout')) {
+    return 'Délai dépassé. Réessaie';
+  }
+  
+  return message;
+};
+
 export default function RegisterScreen() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
@@ -19,6 +51,8 @@ export default function RegisterScreen() {
   const [success, setSuccess] = useState(false);
 
   const handleRegister = async () => {
+    console.log('🚀 handleRegister called');
+    
     if (!email || !password || !fullName) {
       setError('Veuillez remplir tous les champs');
       return;
@@ -31,20 +65,32 @@ export default function RegisterScreen() {
 
     setLoading(true);
     setError('');
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-        emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/(auth)/login` : undefined
+    
+    try {
+      console.log('📤 Calling supabase.auth.signUp...');
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName },
+          emailRedirectTo: 'linkup://(auth)/login'
+        }
+      });
+      
+      console.log('📥 SignUp response:', { data, error });
+      
+      if (error) {
+        console.error('❌ SignUp error:', error);
+        setError(translateAuthError(error));
+      } else {
+        console.log('✅ SignUp success');
+        setSuccess(true);
       }
-    });
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess(true);
+    } catch (err: any) {
+      console.error('💥 Crash in handleRegister:', err);
+      setError(translateAuthError(err));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -144,17 +190,11 @@ export default function RegisterScreen() {
             }}
           >
             {error ? (
-              <Text
-               
-                style={{
-                  color: '#FF6B6B',
-                  textAlign: 'center',
-                  marginBottom: 16,
-                  fontSize: 14,
-                }}
-              >
-                {error}
-              </Text>
+              <View style={{ backgroundColor: 'rgba(255, 107, 107, 0.1)', borderRadius: 12, padding: 12, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: '#FF6B6B' }}>
+                <Text style={{ color: '#FF6B6B', textAlign: 'center', fontSize: 14, fontWeight: '500' }}>
+                  ⚠️ {error}
+                </Text>
+              </View>
             ) : null}
 
             {/* Full Name Field */}

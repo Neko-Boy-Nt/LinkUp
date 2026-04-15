@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenue sur LinkUp</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #CA98FF 0%, #9C42F4 100%);
+      padding: 40px;
+      text-align: center;
+    }
+    .logo {
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      font-weight: 900;
+      color: white;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+    .header p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    .content {
+      padding: 40px;
+      color: #e0e0e0;
+    }
+    .content h2 {
+      color: white;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .content p {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      color: #b0b0c0;
+    }
+    .button-container {
+      text-align: center;
+      margin: 30px 0;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #CA98FF 0%, #9C42F4 100%);
+      color: white;
+      text-decoration: none;
+      padding: 16px 40px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 10px 30px rgba(156, 66, 244, 0.3);
+    }
+    .divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 30px 0;
+    }
+    .info-box {
+      background: rgba(202, 152, 255, 0.1);
+      border-left: 4px solid #CA98FF;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .info-box p {
+      margin: 0;
+      font-size: 14px;
+    }
+    .footer {
+      text-align: center;
+      padding: 30px 40px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .footer p {
+      color: #888;
+      font-size: 12px;
+    }
+    .social-links {
+      margin-top: 20px;
+    }
+    .social-links a {
+      color: #CA98FF;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    @media (max-width: 480px) {
+      body { padding: 20px 10px; }
+      .header, .content { padding: 30px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">L</div>
+      <h1>LinkUp</h1>
+      <p>L'excellence académique à portée de clic</p>
+    </div>
+    
+    <div class="content">
+      <h2>Bienvenue Jean Dupont !</h2>
+      
+      <p>Merci de rejoindre LinkUp, la communauté qui connecte les étudiants pour partager connaissances, ressources et opportunités.</p>
+      
+      <p>Pour finaliser la création de ton compte et accéder à toutes les fonctionnalités, confirme ton adresse email en cliquant sur le bouton ci-dessous :</p>
+      
+      <div class="button-container">
+        <a href="https://linkup.app/confirm?token=xyz123" class="button">Confirmer mon email</a>
+      </div>
+      
+      <div class="info-box">
+        <p><strong>Bloquez-vous ?</strong> Si le bouton ne fonctionne pas, copie ce lien directement dans ton navigateur :<br>
+        <span style="color: #CA98FF;">https://linkup.app/confirm?token=xyz123</span></p>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <p style="font-size: 14px; color: #888;">
+        Si tu n'as pas créé de compte sur LinkUp, ignore simplement cet email. Le lien expire dans 24 heures.
+      </p>
+    </div>
+    
+    <div class="footer">
+      <p>© 2026 LinkUp. Tous droits réservés.</p>
+      <div class="social-links">
+        <a href="#">Twitter</a>
+        <a href="#">Instagram</a>
+        <a href="#">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

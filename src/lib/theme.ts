@@ -25,12 +25,12 @@ export const colors = {
 export type ThemeColors = typeof colors.light;
 
 export function useTheme() {
-  const scheme = useColorScheme();
-  const [theme, setTheme] = useState(scheme === 'dark' ? colors.dark : colors.light);
+  // Force light mode
+  const [theme, setTheme] = useState(colors.light);
 
   useEffect(() => {
-    setTheme(scheme === 'dark' ? colors.dark : colors.light);
-  }, [scheme]);
+    setTheme(colors.light);
+  }, []);
 
-  return { colors: theme, isDark: scheme === 'dark' };
+  return { colors: theme, isDark: false };
 }

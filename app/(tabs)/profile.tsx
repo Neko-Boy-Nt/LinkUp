@@ -1,30 +1,66 @@
-import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image, Dimensions } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, ScrollView, Pressable, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/lib/theme';
 import { useAuth } from '../../src/providers/AuthProvider';
 import { GlassmorphismCard } from '../../src/components/GlassmorphismCard';
 import { LinearGradient } from 'expo-linear-gradient';
+import { supabase } from '../../src/lib/supabase';
 
 import { Menu, Settings, Share2, Grid, Bookmark, Users } from '../../src/components/Icon';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// Mock posts data
-const MOCK_POSTS = [
-  { id: '1', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop' },
-  { id: '2', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=400&fit=crop' },
-  { id: '3', image: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&h=400&fit=crop' },
-  { id: '4', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&h=400&fit=crop' },
-  { id: '5', image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&h=400&fit=crop' },
-  { id: '6', image: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=400&h=400&fit=crop' },
-];
 
 export default function ProfileScreen() {
   const { colors, isDark } = useTheme();
   const { profile, user, signOut } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'posts' | 'saved' | 'tagged'>('posts');
+  const [userPosts, setUserPosts] = useState<any[]>([]);
+  const [userStats, setUserStats] = useState({ posts: 0, followers: 0, following: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoading(true);
+      
+      // Charger les posts de l'utilisateur
+      const { data: postsData } = await supabase
+        .from('posts')
+        .select('id, image_url, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      setUserPosts(postsData || []);
+      
+      // Charger les stats (followers/following)
+      const { count: followersCount } = await supabase
+        .from('followers')
+        .select('*', { count: 'exact' })
+        .eq('following_id', user.id);
+      
+      const { count: followingCount } = await supabase
+        .from('followers')
+        .select('*', { count: 'exact' })
+        .eq('follower_id', user.id);
+      
+      setUserStats({
+        posts: postsData?.length || 0,
+        followers: followersCount || 0,
+        following: followingCount || 0,
+      });
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getAvatarInitial = () => {
     if (profile?.full_name) return profile.full_name.charAt(0).toUpperCase();
@@ -192,17 +228,17 @@ export default function ProfileScreen() {
           >
             <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
               <View style={{ alignItems: 'center', flex: 1 }}>
-                <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>142</Text>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>{userStats.posts}</Text>
                 <Text style={{ fontSize: 10, color: isDark ? '#AAA8C3' : '#74738B', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>Posts</Text>
               </View>
               <View style={{ width: 1, height: 32, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
               <View style={{ alignItems: 'center', flex: 1 }}>
-                <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>12.5k</Text>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>{userStats.followers}</Text>
                 <Text style={{ fontSize: 10, color: isDark ? '#AAA8C3' : '#74738B', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>Followers</Text>
               </View>
               <View style={{ width: 1, height: 32, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
               <View style={{ alignItems: 'center', flex: 1 }}>
-                <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>842</Text>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>{userStats.following}</Text>
                 <Text style={{ fontSize: 10, color: isDark ? '#AAA8C3' : '#74738B', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>Following</Text>
               </View>
             </View>
@@ -271,33 +307,40 @@ export default function ProfileScreen() {
           </View>
 
           {/* Posts Grid */}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 16, marginHorizontal: -6 }}>
-            {MOCK_POSTS.map((post, index) => (
-              <Pressable
-                key={post.id}
-                style={{
-                  width: (SCREEN_WIDTH - 52) / 3,
-                  height: (SCREEN_WIDTH - 52) / 3,
-                  margin: 4,
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                }}
-              >
-                <Image
-                  source={{ uri: post.image }}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="cover"
-                />
-                <View
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    backgroundColor: 'rgba(0,0,0,0.2)',
-                  }}
-                />
-              </Pressable>
-            ))}
-          </View>
+          {loading ? (
+            <View style={{ paddingTop: 40, alignItems: 'center' }}>
+              <ActivityIndicator color={colors.primary} />
+            </View>
+          ) : (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 16, marginHorizontal: -6 }}>
+              {userPosts.length > 0 ? (
+                userPosts.map((post) => (
+                  <Pressable
+                    key={post.id}
+                    style={{
+                      width: (SCREEN_WIDTH - 52) / 3,
+                      height: (SCREEN_WIDTH - 52) / 3,
+                      margin: 4,
+                      borderRadius: 12,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <Image
+                      source={{ uri: post.image_url || 'https://via.placeholder.com/400' }}
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="cover"
+                    />
+                  </Pressable>
+                ))
+              ) : (
+                <View style={{ width: '100%', paddingTop: 40, alignItems: 'center' }}>
+                  <Text style={{ color: isDark ? '#AAA8C3' : '#74738B', fontSize: 14 }}>
+                    Aucun post encore
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
 
           {/* Bottom spacing */}
           <View style={{ height: 100 }} />
